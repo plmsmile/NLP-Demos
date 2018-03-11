@@ -8,13 +8,10 @@
 @date: 2018-03-10
 '''
 
-
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
-
 
 from model import WindowClassifier
 from config import DefaultConfig
@@ -23,6 +20,9 @@ from data_helper import *
 
 def train(th, opt, train_data):
     ''' 训练模型
+    Args:
+        opt -- 配置项
+        train_data -- DataLoader数据
     '''
 
     model = WindowClassifier(th.vocab_size, th.tag_size, opt.embed_size,
