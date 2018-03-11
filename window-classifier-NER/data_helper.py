@@ -60,7 +60,7 @@ class TextHelper(object):
     def word2index(self, word):
         return self.word2idx.get(word, self.word2idx[self.unk])
 
-    def index2tag(self, index):
+    def index2word(self, index):
         return self.idx2word.get(index, self.unk)
 
     def tag2index(self, tag):
