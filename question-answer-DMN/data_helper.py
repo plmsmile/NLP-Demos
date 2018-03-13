@@ -13,6 +13,21 @@ from copy import deepcopy
 from torch.autograd import Variable
 from config import DefaultConfig
 
+'''
+源数据格式，一个对话结束之后又从1开始编号
+1 Bill travelled to the office.
+2 Bill picked up the football there.
+3 Bill went to the bedroom.
+4 Bill gave the football to Fred.
+5 What did Bill give to Fred? 	football	4
+6 Fred handed the football to Bill.
+7 Jeff went back to the office.
+8 Who received the football? 	Bill	6
+9 Bill travelled to the office.
+10 Bill got the milk there.
+11 Who received the football? 	Bill	6
+'''
+
 flatten = lambda l : [item for sublist in l for item in sublist]
 
 
@@ -57,8 +72,8 @@ class TextHelper(object):
     def word2index(self, word):
         return self.word2idx.get(word, self.word2idx[self.unk])
     
-    def index2word(self, word):
-        return self.word2idx.get(word, self.word2idx[self.unk])
+    def index2word(self, index):
+        return self.idx2word.get(index, self.unk)
     
     def sentence2indices(self, sentence):
         '''单词列表 -- 单词id列表'''

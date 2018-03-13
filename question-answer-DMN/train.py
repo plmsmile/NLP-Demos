@@ -11,6 +11,7 @@ import torch
 import torch.optim as optim
 import torch.nn as nn
 import numpy as np
+import random
 import torch.nn.functional as F
 from data_helper import get_variable, get_data_loader, get_data_from_file, pad_batch_data
 from config import DefaultConfig
@@ -59,9 +60,11 @@ def train(opt, th, train_data):
             if e == opt.max_epoch - 1 and avg_loss > opt.min_loss:
                 print ("epoch finish, loss > min_loss")
                 torch.save(model, opt.model_path)
-            if avg_loss <= opt.min_loss:
+                break
+            elif avg_loss <= opt.min_loss:
                 print ("Early stop")
                 torch.save(model, opt.model_path)
+                break
 
                 
 def get_model(model_path):
@@ -84,6 +87,38 @@ def cal_test_accuracy(model, test_data, th, n_episode=DefaultConfig.n_episode):
     print ("acccuracy = ", correct / len(test_data)) 
 
 
+def test_one_data(model, item, th, n_episode=DefaultConfig.n_episode):
+    ''' 测试一条数据
+    Args:
+        model -- DMN模型
+        item -- [facts, question, answer]
+        th -- TextHelper
+    Returns:
+        None
+    '''
+    # batch_size = 1
+    model.eval()
+    item = [item]
+    facts, facts_mask, question, question_mask, answer = pad_batch_data(item, th)
+    preds = model(facts, facts_mask, question, question_mask, answer.size(1), n_episode)
+    
+    item = item[0]
+    preds = preds.max(1)[1].data.tolist()
+    fact = item[0][0]
+    facts = [th.indices2sentence(fact) for fact in item[0]]
+    facts = [" ".join(fact) for fact in facts]
+    q = " ".join(th.indices2sentence(item[1]))
+    a = " ".join(th.indices2sentence(item[2]))
+    preds = " ".join(th.indices2sentence(preds))
+    
+    print ("Facts:")
+    print ("\n".join(facts))
+    print ("Question:", q)
+    print ("Answer:", a)
+    print ("Predict:", preds)
+    print ()
+    
+
 if __name__ == '__main__':
     opt = DefaultConfig()
     train_data, th = get_data_from_file(opt.train_file, opt)
@@ -91,5 +126,9 @@ if __name__ == '__main__':
     train(opt, th, train_data)
     model = get_model(opt.model_path)
     test_data, test_th = get_data_from_file(opt.test_file, opt)
-    print ("train_data:", len(test_data))
+    print ("test_data:", len(test_data))
     cal_test_accuracy(model, test_data, th)
+    for i in range(10):
+        item = random.choice(test_data)
+        #print (item)
+        test_one_data(model, item, th)
